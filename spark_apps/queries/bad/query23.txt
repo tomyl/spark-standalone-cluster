@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/opt/spark/apps/test.py", line 19, in <module>
+    result = spark.sql(sql)
+             ^^^^^^^^^^^^^^
+  File "/opt/spark/python/lib/pyspark.zip/pyspark/sql/session.py", line 1631, in sql
+  File "/opt/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/java_gateway.py", line 1322, in __call__
+  File "/opt/spark/python/lib/pyspark.zip/pyspark/errors/exceptions/captured.py", line 185, in deco
+pyspark.errors.exceptions.captured.ParseException: 
+[PARSE_SYNTAX_ERROR] Syntax error at or near 'with': extra input 'with'.(line 51, pos 1)
