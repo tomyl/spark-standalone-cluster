@@ -92,7 +92,7 @@ pygments==2.15.1
     # via ipython
 pyparsing==3.0.9
     # via httplib2
-pyspark==3.4.0
+pyspark==3.5.0
     # via -r requirements/requirements.in
 python-dateutil==2.8.2
     # via pandas
