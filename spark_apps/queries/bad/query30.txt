@@ -1,0 +1,4 @@
+File "/opt/spark/python/lib/pyspark.zip/pyspark/errors/exceptions/captured.py", line 185, in deco
+  pyspark.errors.exceptions.captured.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `c_last_review_date` cannot be resolved. Did you mean one of the following? [`cu
+  stomer`.`c_last_review_date_sk`, `ctr1`.`ctr_state`, `customer`.`c_login`, `customer`.`c_birth_day`, `customer`.`c_last_name`].; line 15 pos 8;
+

@@ -17,6 +17,21 @@ def create_views(spark, pattern):
         print(f"Table {table}")
         spark.read.parquet(name).createOrReplaceTempView(table)
 
+def strip_comments(sql):
+    output = []
+    for line in sql.splitlines():
+        if line.startswith('-- '):
+            continue
+        output.append(line)
+    return '\n'.join(output)
+
+def split_statements(sql):
+    statements = []
+    for statement in strip_comments(sql).split(';'):
+        if statement:
+            statements.append(statement)
+    return statements
+
 def run_queries(spark, pattern, start=1, end=99):
     t0 = time.time()
     for i in range(start, end+1):
@@ -26,12 +41,20 @@ def run_queries(spark, pattern, start=1, end=99):
             print("%s: not found" % name)
             continue
         sql = open(name).read()
-        print("%s:\n%s" % (name, sql))
-        df = spark.sql(sql)
-        df.explain(mode="extended")
-        df.collect()
-        df.show()
-        print("%s executed in %.3f" % (name, time.time()-t1))
+        print("FILE %s:\n%s" % (name, sql))
+        statements = split_statements(sql)
+        num = len(statements)
+        for i, sql in enumerate(statements):
+            if num > 1:
+                print("FILE %s (%d/%d):\n%s" % (name, i+1, num, sql))
+            t2 = time.time()
+            df = spark.sql(sql)
+            df.explain(mode="extended")
+            df.collect()
+            df.show()
+            if num > 1:
+                print("FILE %s (%d/%d) executed in %.3f" % (name, i+1, num, time.time()-t2))
+        print("FILE %s executed in %.3f" % (name, time.time()-t1))
     print("%d queries executed in %.3f" % (end+1-start, time.time()-t0))
 
 def main(argv=sys.argv[1:]):
