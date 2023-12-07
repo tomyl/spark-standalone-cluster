@@ -2,7 +2,13 @@
 
 # duckdb < duckdb.sql
 # make run-scaled
+#
+# Parquet tables:
 # docker exec spark-master spark-submit --master spark://spark-master:7077 --deploy-mode client --conf spark.sql.autoBroadcastJoinThreshold=-1 ./apps/tpcds.py
+#
+# Delta tables:
+# ./convert.py data/tpcds_1
+# docker exec spark-master spark-submit --master spark://spark-master:7077 --deploy-mode client --packages io.delta:delta-spark_2.12:3.0.0 --conf spark.sql.autoBroadcastJoinThreshold=-1  --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog" ./apps/tpcds.py --delta
 
 import argparse
 import glob
@@ -13,8 +19,8 @@ from pyspark.sql import SparkSession
 
 def create_views(spark, pattern):
     for name in glob.glob(pattern):
-        table = os.path.basename(name.replace(".parquet", ""))
-        print(f"Table {table}")
+        table = os.path.basename(name.replace(".delta", "").replace(".parquet", ""))
+        print(f"Creating view {table} from {name}")
         spark.read.parquet(name).createOrReplaceTempView(table)
 
 def strip_comments(sql):
@@ -59,12 +65,18 @@ def run_queries(spark, pattern, start=1, end=99):
 
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
+    parser.add_argument("--delta", action='store_true')
     parser.add_argument("--start", metavar="NUM", type=int, default=1)
     parser.add_argument("--end", metavar="NUM", type=int, default=99)
     args = parser.parse_args(argv)
 
     spark = SparkSession.builder.appName("tpcds").getOrCreate()
-    create_views(spark, "/opt/spark/data/tpcds_1/*.parquet")
+
+    if args.delta:
+        create_views(spark, "/opt/spark/data/tpcds_1/*.delta")
+    else:
+        create_views(spark, "/opt/spark/data/tpcds_1/*.parquet")
+
     run_queries(spark, "/opt/spark/apps/queries/query%02d.sql", start=args.start, end=args.end)
 
 if __name__ == '__main__':
